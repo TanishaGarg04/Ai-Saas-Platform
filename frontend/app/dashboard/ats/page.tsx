@@ -202,16 +202,11 @@ export default function ATSPage() {
       }]);
     }
   };
-
-  const copyShareLink = () => {
-    const link = `${window.location.origin}/dashboard/ats?shared=true`;
-    navigator.clipboard.writeText(link);
-    addNotification("Share link copied! 📋", "info");
-  };
-    } finally {
-      setLoading(false);
-    }
-  };
+const copyShareLink = () => {
+  const link = `${window.location.origin}/dashboard/ats?shared=true`;
+  navigator.clipboard.writeText(link);
+  addNotification("Share link copied! 📋", "info");
+};
 
   return (
     <div style={styles.page}>
