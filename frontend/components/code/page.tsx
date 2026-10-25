@@ -1,5 +1,7 @@
 "use client";
 
+import { API_URL } from "@/lib/api";
+
 import type { CSSProperties } from "react";
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -155,7 +157,7 @@ export default function Code() {
     setOutput("");
 
     try {
-      const res = await fetch("http://localhost:5000/ai", {
+      const res = await fetch(`${API_URL}/ai`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -339,8 +341,8 @@ ${comments.map((comment) => `${comment.author}: ${comment.text}`).join("\n")}`;
   };
 
   return (
-    <div style={styles.page}>
-      <div style={styles.notificationsContainer}>
+    <div className="tool-page" style={styles.page}>
+      <div className="notification-stack" style={styles.notificationsContainer}>
         {notifications.map((notification) => (
           <div
             key={notification.id}
@@ -354,9 +356,9 @@ ${comments.map((comment) => `${comment.author}: ${comment.text}`).join("\n")}`;
         ))}
       </div>
 
-      <div style={styles.container}>
-        <div style={styles.mainColumn}>
-          <div style={styles.card}>
+      <div className="tool-layout code-review-layout" style={styles.container}>
+        <div className="code-review-main" style={styles.mainColumn}>
+          <div className="tool-content-card" style={styles.card}>
             <button style={styles.backButton} onClick={() => router.push("/dashboard")}>
               Back to Dashboard
             </button>
@@ -379,7 +381,7 @@ ${comments.map((comment) => `${comment.author}: ${comment.text}`).join("\n")}`;
               </div>
             </div>
 
-            <div style={styles.toolsRow}>
+            <div className="code-review-tools-row" style={styles.toolsRow}>
               <div style={{ flex: 1 }}>
                 <label style={styles.selectLabel}>
                   Tool
@@ -450,7 +452,7 @@ ${comments.map((comment) => `${comment.author}: ${comment.text}`).join("\n")}`;
                 </button>
               </div>
 
-              <div style={styles.insightGrid}>
+              <div className="code-review-insight-grid" style={styles.insightGrid}>
                 <div style={styles.insightItem}>
                   <span style={styles.insightLabel}>Lines</span>
                   <strong style={styles.insightValue}>{inputInsights.lines}</strong>
@@ -484,7 +486,7 @@ ${comments.map((comment) => `${comment.author}: ${comment.text}`).join("\n")}`;
 
             {error && <p style={styles.error}>{error}</p>}
 
-            <div style={styles.buttonGroup}>
+            <div className="button-group" style={styles.buttonGroup}>
               <button
                 onClick={review}
                 disabled={loading}
@@ -505,7 +507,7 @@ ${comments.map((comment) => `${comment.author}: ${comment.text}`).join("\n")}`;
               </button>
             </div>
 
-            <div style={styles.outputCard}>
+            <div className="code-review-output" style={styles.outputCard}>
               {!output && !loading ? (
                 <p style={styles.helpText}>AI review output will appear here after submission.</p>
               ) : (
@@ -521,7 +523,7 @@ ${comments.map((comment) => `${comment.author}: ${comment.text}`).join("\n")}`;
           </div>
         </div>
 
-        <div style={styles.sidebarColumn}>
+        <div className="tool-sidebar" style={styles.sidebarColumn}>
           <div style={styles.panel}>
             <h3 style={styles.panelTitle}>Stats</h3>
             <div style={styles.statsList}>

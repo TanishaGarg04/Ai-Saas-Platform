@@ -1,5 +1,7 @@
 "use client";
 
+import { API_URL } from "@/lib/api";
+
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { auth } from "@/lib/firebase";
@@ -44,7 +46,7 @@ export default function Chat() {
   }, [messages, loading]);
 
   const loadChats = async (email: string) => {
-    const res = await fetch(`http://localhost:5000/chat/list/${email}`);
+    const res = await fetch(`${API_URL}/chat/list/${email}`);
     const data = await res.json();
 
     setChats(data);
@@ -59,7 +61,7 @@ export default function Chat() {
   const createNewChat = async () => {
     if (!user?.email) return;
 
-    const res = await fetch("http://localhost:5000/chat/new", {
+    const res = await fetch(`${API_URL}/chat/new`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -75,7 +77,7 @@ export default function Chat() {
   };
 
   const loadChat = async (id: string) => {
-    const res = await fetch(`http://localhost:5000/chat/${id}`);
+    const res = await fetch(`${API_URL}/chat/${id}`);
     const data = await res.json();
 
     setCurrentChat(data);
@@ -93,7 +95,7 @@ export default function Chat() {
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:5000/ai", {
+      const res = await fetch(`${API_URL}/ai`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -127,7 +129,7 @@ export default function Chat() {
   };
 
   const deleteChat = async (id: string) => {
-    const res = await fetch(`http://localhost:5000/chat/${id}`, {
+    const res = await fetch(`${API_URL}/chat/${id}`, {
       method: "DELETE",
     });
 
@@ -154,7 +156,7 @@ export default function Chat() {
 
     if (!newTitle || !newTitle.trim()) return;
 
-    const res = await fetch(`http://localhost:5000/chat/${id}`, {
+    const res = await fetch(`${API_URL}/chat/${id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -179,7 +181,7 @@ export default function Chat() {
   };
 
   return (
-    <>
+    <div className="chat-page">
       <button
         onClick={() => router.push("/dashboard")}
         style={{
@@ -195,8 +197,9 @@ export default function Chat() {
         Back to Dashboard
       </button>
 
-      <div style={{ display: "flex", height: "75vh", gap: "16px" }}>
+      <div className="chat-layout" style={{ display: "flex", height: "75vh", gap: "16px" }}>
         <div
+          className="chat-sidebar"
           style={{
             width: "260px",
             background: "#111827",
@@ -289,12 +292,13 @@ export default function Chat() {
           </div>
         </div>
 
-        <div style={{ flex: 1 }}>
+        <div className="chat-main" style={{ flex: 1 }}>
           <h2 style={{ marginBottom: "16px" }}>
             {currentChat?.title || "AI Chat"}
           </h2>
 
           <div
+            className="chat-messages"
             style={{
               height: "520px",
               overflowY: "auto",
@@ -351,7 +355,7 @@ export default function Chat() {
             <div ref={bottomRef}></div>
           </div>
 
-          <div style={{ display: "flex", gap: "10px", marginTop: "14px" }}>
+          <div className="chat-input-row" style={{ display: "flex", gap: "10px", marginTop: "14px" }}>
             <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -390,6 +394,6 @@ export default function Chat() {
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }

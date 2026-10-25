@@ -16,6 +16,12 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## Backend API
+The frontend uses `http://localhost:5000` for local development. For Netlify, set
+`NEXT_PUBLIC_API_URL` to the public origin of the deployed backend (for example,
+`https://your-backend.example.com`) in the site's environment variables, then
+redeploy. The backend must also allow requests from the deployed frontend origin.
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.

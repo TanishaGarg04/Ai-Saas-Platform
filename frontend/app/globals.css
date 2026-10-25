@@ -19,10 +19,380 @@
   }
 }
 
+@media (max-width: 900px) {
+  .dashboard-page {
+    padding: 24px !important;
+  }
+
+  .dashboard-stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .dashboard-stats-grid > :last-child {
+    grid-column: 1 / -1;
+  }
+
+  .dashboard-tools-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .admin-layout {
+    flex-direction: column !important;
+    padding: 20px !important;
+    gap: 14px !important;
+  }
+
+  .admin-sidebar {
+    width: 100% !important;
+    flex: none !important;
+  }
+
+  .admin-main {
+    min-width: 0;
+    padding: 20px !important;
+  }
+
+  .admin-stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .admin-stats-grid > :last-child {
+    grid-column: 1 / -1;
+  }
+
+  .admin-analytics-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .admin-analytics-grid > :last-child {
+    grid-column: 1 / -1;
+  }
+
+  .admin-chat-table {
+    overflow-x: auto;
+  }
+
+  .admin-chat-table-head,
+  .admin-chat-table-row {
+    min-width: 680px;
+  }
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  min-width: 320px;
+  overflow-x: hidden;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  touch-action: manipulation;
+}
+
+.tool-layout {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  align-items: start;
+}
+
+.code-review-layout {
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
+}
+
+.code-review-main,
+.code-review-output {
+  min-width: 0;
+  width: 100%;
+}
+
+.code-review-output {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 1400px) {
+  .code-review-layout {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+
+@media (max-width: 1200px) {
+  .tool-page {
+    padding: 20px 16px !important;
+  }
+
+  .tool-content-card {
+    width: 100%;
+    min-width: 0;
+    padding: 22px !important;
+  }
+
+  .tool-page textarea,
+  .tool-page select,
+  .tool-page input,
+  .tool-page button {
+    max-width: 100%;
+  }
+
+  .tool-layout {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .tool-sidebar {
+    width: 100% !important;
+  }
+
+  .code-review-main,
+  .code-review-output {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .code-review-output {
+    overflow-wrap: anywhere;
+  }
+
+  .ats-layout .ats-form-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .admin-layout {
+    min-height: 100vh;
+  }
+
+  .admin-sidebar {
+    width: 220px !important;
+    flex: 0 0 220px;
+  }
+
+  .admin-main {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .dashboard-page,
+  .tool-page {
+    padding: 18px 14px !important;
+  }
+
+  .dashboard-topbar {
+    align-items: flex-start !important;
+    gap: 14px;
+    flex-direction: column;
+  }
+
+  .dashboard-topbar > button {
+    align-self: flex-start;
+  }
+
+  .dashboard-topbar h1 {
+    font-size: 27px !important;
+    overflow-wrap: anywhere;
+  }
+
+  .dashboard-topbar p {
+    overflow-wrap: anywhere;
+  }
+
+  .dashboard-stats-grid,
+  .dashboard-tools-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+    margin-top: 18px !important;
+  }
+
+  .dashboard-page h2 {
+    margin-top: 24px !important;
+  }
+
+  .dashboard-tool-card {
+    padding: 20px !important;
+  }
+
+  .tool-layout {
+    gap: 14px !important;
+  }
+
+  .tool-content-card {
+    padding: 18px !important;
+    border-radius: 18px !important;
+  }
+
+  .tool-page h1,
+  .tool-page h2 {
+    font-size: clamp(23px, 7vw, 30px) !important;
+    line-height: 1.15 !important;
+  }
+
+  .tool-page textarea,
+  .tool-page select,
+  .tool-page input:not([type="file"]) {
+    max-width: 100%;
+    font-size: 16px !important;
+  }
+
+  .tool-page .button-group {
+    flex-wrap: wrap;
+  }
+
+  .tool-page .button-group button {
+    min-width: calc(50% - 6px);
+  }
+
+  .code-review-tools-row {
+    flex-direction: column;
+  }
+
+  .code-review-insight-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .auth-page {
+    min-height: 100svh !important;
+    height: auto !important;
+    padding: 20px 14px;
+  }
+
+  .auth-card {
+    width: min(100%, 420px) !important;
+    padding: 26px 20px !important;
+  }
+
+  .admin-layout {
+    flex-direction: column !important;
+    padding: 14px !important;
+    gap: 14px !important;
+  }
+
+  .admin-sidebar {
+    width: 100% !important;
+    flex: none !important;
+    padding: 18px !important;
+  }
+
+  .admin-main {
+    padding: 4px !important;
+  }
+
+  .admin-topbar {
+    align-items: stretch !important;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .admin-topbar input {
+    width: 100% !important;
+    max-width: none !important;
+  }
+
+  .admin-stats-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  .admin-analytics-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  .admin-stats-grid > :last-child,
+  .admin-analytics-grid > :last-child {
+    grid-column: auto;
+  }
+
+  .admin-chat-table {
+    padding: 14px !important;
+  }
+
+  .admin-chat-table > div:first-child {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .admin-main table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  .chat-page {
+    padding: 12px !important;
+  }
+
+  .chat-layout {
+    height: auto !important;
+    min-height: calc(100svh - 90px);
+    flex-direction: column;
+  }
+
+  .chat-sidebar {
+    width: 100% !important;
+    max-height: 210px;
+  }
+
+  .chat-main {
+    min-width: 0;
+  }
+
+  .chat-main h2 {
+    font-size: 20px;
+    overflow-wrap: anywhere;
+  }
+
+  .chat-messages {
+    height: 52svh !important;
+    min-height: 280px;
+    padding: 12px !important;
+  }
+
+  .chat-messages > div > div {
+    max-width: 88% !important;
+  }
+
+  .chat-input-row textarea {
+    min-width: 0;
+  }
+
+  .chat-input-row button {
+    padding: 0 14px !important;
+  }
+
+  .notification-stack {
+    left: 12px;
+    right: 12px;
+    top: 12px !important;
+  }
+}
+
+.chat-page {
+  width: min(100%, 1500px);
+  margin: 0 auto;
+  padding: 20px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 .tool-card:hover {
   transform: translateY(-6px);

@@ -7,7 +7,9 @@ const extractText = async (file) => {
   }
 
   if (file.mimetype === "application/pdf") {
-    const data = await pdf(file.buffer);
+    // PDF.js can emit noisy font-hinting and standard-font diagnostics for
+    // otherwise readable resumes. Keep parser logs to errors only.
+    const data = await pdf(file.buffer, { verbosityLevel: 0 });
     return data.text;
   }
 
@@ -102,6 +104,13 @@ export const checkATS = async (req, res) => {
     }
 
     const resumeText = await extractText(req.file);
+    if (!resumeText.trim()) {
+      return res.status(422).json({
+        success: false,
+        message: "Could not extract readable text from this resume. If it is a scanned PDF, run OCR or upload a DOCX with selectable text.",
+      });
+    }
+
     const resumeTextLower = resumeText.toLowerCase();
     const keywords = extractKeywords(jobDescription);
 
@@ -123,31 +132,75 @@ export const checkATS = async (req, res) => {
 
     const weakSections = buildWeakSections(resumeText);
     const suggestions = [];
+    const issues = [];
 
     if (missingKeywords.length > 0) {
+      const keywordsToAdd = missingKeywords.slice(0, 8);
       suggestions.push(
-        `Add more job-specific keywords: ${missingKeywords
-          .slice(0, 5)
-          .join(", ")}`
+        `Add relevant job keywords where they accurately reflect your experience: ${keywordsToAdd.join(", ")}.`
       );
+      issues.push({
+        title: "Important job description keywords are missing",
+        details: `These terms were not found in your resume: ${keywordsToAdd.join(", ")}.`,
+        fix: "Add the relevant terms to your Skills or Experience sections, and include them in context. Only include skills you actually have; avoid keyword stuffing.",
+      });
     }
 
     if (!/achievement|accomplishment/.test(resumeTextLower)) {
-      suggestions.push("Include measurable achievements and results.");
+      suggestions.push("Add achievements that show the results of your work.");
+      issues.push({
+        title: "Achievements or results are not clearly highlighted",
+        details: "The resume does not appear to have an Achievements section or use achievement language.",
+        fix: "Add 2–4 accomplishment bullets under your relevant roles. Start with an action verb and explain the result, for example: “Automated weekly reports, saving the team 5 hours per week.”",
+      });
     }
 
     if (!/project/.test(resumeTextLower)) {
-      suggestions.push("Add a clear Projects section with details.");
+      suggestions.push("Add a Projects section if you have relevant work to show.");
+      issues.push({
+        title: "A Projects section was not found",
+        details: "Relevant projects can help demonstrate skills that are not clear from work history alone.",
+        fix: "Add a Projects section with the project goal, your contribution, tools used, and outcome. Skip this if projects are not relevant to your background.",
+      });
+    }
+
+    if (weakSections.length > 0) {
+      issues.push({
+        title: "Common resume sections may be missing",
+        details: `Could not find these sections or related terms: ${weakSections.join(", ")}.`,
+        fix: "If relevant, add clearly labeled sections such as Skills, Experience, Projects, and Achievements. Use simple, standard headings so applicant tracking systems can identify them.",
+      });
+    }
+
+    if (!/(\d+\s?%|\$\s?\d+|\b\d+\s?(users|customers|clients|people|hours|days|weeks|months|years)\b)/i.test(resumeText)) {
+      issues.push({
+        title: "No measurable results were detected",
+        details: "The resume may describe responsibilities without showing their scale or impact.",
+        fix: "Where you can support it, add numbers such as time saved, revenue gained, users served, or error reduction. Do not guess or invent metrics.",
+      });
     }
 
     if (normalizeText(resumeText).length < 200) {
       suggestions.push(
-        "Expand your resume with more specific responsibilities and outcomes."
+        "Add more detail about relevant responsibilities and outcomes."
       );
+      issues.push({
+        title: "Resume content looks very short",
+        details: "The extracted resume text is brief, which may leave relevant experience or skills unclear.",
+        fix: "Add concise bullets describing relevant responsibilities, tools, and outcomes. Keep the content accurate and focused on the target role.",
+      });
     }
 
     if (suggestions.length === 0) {
       suggestions.push("Your resume is well-aligned with the job description.");
+    }
+
+    if (issues.length === 0) {
+      issues.push({
+        title: "No major issues detected by these checks",
+        details: "The automated checks found job keywords and common resume sections.",
+        fix: "Review the resume yourself for accuracy, clear formatting, and examples tailored to the role.",
+      });
     }
 
     const summary = `Matched ${matchedKeywords.length} of ${keywords.length} important keywords from the job description.`;
@@ -157,6 +210,7 @@ export const checkATS = async (req, res) => {
       result: {
         atsScore,
         summary,
+        issues,
         matchingSkills: matchedKeywords.slice(0, 6),
         missingKeywords: missingKeywords.slice(0, 6),
         weakSections,

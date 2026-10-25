@@ -1,5 +1,7 @@
 "use client";
 
+import { API_URL } from "@/lib/api";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -54,16 +56,16 @@ export default function ATSPage() {
       formData.append("resume", file);
       formData.append("jobDescription", jd.trim());
 
-      const res = await fetch("http://localhost:5000/api/ats/check", {
+      const res = await fetch(`${API_URL}/api/ats/check`, {
         method: "POST",
         body: formData,
       });
 
+      const data = await res.json();
       if (!res.ok) {
-        throw new Error("Server returned an error while checking your resume.");
+        throw new Error(data.message || "Server returned an error while checking your resume.");
       }
 
-      const data = await res.json();
       const resultData = data.result || { atsScore: "N/A", summary: "No result received." };
       setResult(resultData);
       
@@ -209,9 +211,9 @@ const copyShareLink = () => {
 };
 
   return (
-    <div style={styles.page}>
+    <div className="tool-page" style={styles.page}>
       {/* Notifications */}
-      <div style={styles.notificationsContainer}>
+      <div className="notification-stack" style={styles.notificationsContainer}>
         {notifications.map((notif) => (
           <div key={notif.id} style={{...styles.notification, ...styles[`notification_${notif.type}`]}}>
             {notif.message}
@@ -219,10 +221,10 @@ const copyShareLink = () => {
         ))}
       </div>
 
-      <div style={styles.container}>
+      <div className="tool-layout ats-layout" style={styles.container}>
         {/* Left Column - Main Content */}
         <div style={styles.mainColumn}>
-          <div style={styles.card}>
+          <div className="tool-content-card" style={styles.card}>
             <button style={styles.backButton} onClick={() => router.push("/dashboard")}>Back to Dashboard</button>
 
             <div style={styles.headerTop}>
@@ -242,7 +244,7 @@ const copyShareLink = () => {
               </button>
             </div>
 
-            <div style={styles.grid}>
+            <div className="ats-form-grid" style={styles.grid}>
               <div style={styles.formPanel}>
                 <label style={styles.label}>Resume Upload</label>
                 <div style={styles.uploadBox}>
@@ -304,7 +306,7 @@ const copyShareLink = () => {
 
                 {error && <p style={styles.error}>{error}</p>}
 
-                <div style={styles.buttonGroup}>
+                <div className="button-group" style={styles.buttonGroup}>
                   <button
                     style={{
                       ...styles.actionButton,
@@ -340,6 +342,29 @@ const copyShareLink = () => {
                       <div style={styles.scoreBadge}>{result.atsScore}%</div>
                       <h3 style={styles.summaryTitle}>AI Feedback</h3>
                       <p style={styles.summary}>{result.summary}</p>
+                      <h3 style={styles.issuesTitle}>Resume mistakes and how to fix them</h3>
+                      {result.issues?.length ? (
+                        <div style={styles.issuesList}>
+                          {result.issues.map((issue: { title: string; details: string; fix: string }, index: number) => (
+                            <div key={`${issue.title}-${index}`} style={styles.issueCard}>
+                              <h4 style={styles.issueHeading}>{issue.title}</h4>
+                              <p style={styles.issueDetails}>{issue.details}</p>
+                              <p style={styles.issueFix}><strong>How to fix:</strong> {issue.fix}</p>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <ul style={styles.issueFallback}>
+                          {(result.suggestions || []).map((suggestion: string, index: number) => (
+                            <li key={`${suggestion}-${index}`}>{suggestion}</li>
+                          ))}
+                        </ul>
+                      )}
+                      {result.missingKeywords?.length > 0 && (
+                        <p style={styles.keywordNote}>
+                          <strong>Missing job keywords:</strong> {result.missingKeywords.join(", ")}
+                        </p>
+                      )}
                     </>
                   )}
                 </div>
@@ -359,7 +384,7 @@ const copyShareLink = () => {
         </div>
 
         {/* Right Column - Collaboration Panel */}
-        <div style={styles.sidebarColumn}>
+        <div className="tool-sidebar" style={styles.sidebarColumn}>
           {/* Statistics */}
           <div style={styles.panel}>
             <h3 style={styles.panelTitle}>📊 Stats</h3>
@@ -842,6 +867,51 @@ const styles: any = {
     color: "#cbd5e1",
     lineHeight: 1.8,
     whiteSpace: "pre-wrap" as const,
+  },
+  issuesTitle: {
+    margin: "22px 0 12px",
+    fontSize: 18,
+    color: "#f8fafc",
+  },
+  issuesList: {
+    display: "flex",
+    flexDirection: "column" as const,
+    gap: 10,
+  },
+  issueCard: {
+    padding: 14,
+    borderRadius: 12,
+    border: "1px solid rgba(251, 191, 36, 0.28)",
+    background: "rgba(251, 191, 36, 0.07)",
+  },
+  issueHeading: {
+    margin: "0 0 6px",
+    fontSize: 14,
+    color: "#fde68a",
+  },
+  issueDetails: {
+    margin: "0 0 8px",
+    color: "#cbd5e1",
+    fontSize: 13,
+    lineHeight: 1.6,
+  },
+  issueFix: {
+    margin: 0,
+    color: "#d1fae5",
+    fontSize: 13,
+    lineHeight: 1.6,
+  },
+  issueFallback: {
+    margin: 0,
+    paddingLeft: 20,
+    color: "#cbd5e1",
+    lineHeight: 1.7,
+  },
+  keywordNote: {
+    marginTop: 14,
+    color: "#bfdbfe",
+    fontSize: 13,
+    lineHeight: 1.6,
   },
   tipCard: {
     background: "rgba(255,255,255,0.04)",

@@ -1,11 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import type { FirebaseError } from "firebase/app";
 import { auth } from "@/lib/firebase";
 import {
+  browserPopupRedirectResolver,
+  getRedirectResult,
+  GoogleAuthProvider,
+  onAuthStateChanged,
   signInWithEmailAndPassword,
   signInWithPopup,
-  GoogleAuthProvider,
+  signInWithRedirect,
 } from "firebase/auth";
 import { useRouter } from "next/navigation";
 
@@ -17,6 +22,50 @@ export default function Login() {
   const router = useRouter();
 
   const ADMIN_EMAIL = "admin@gmail.com";
+
+  const routeUser = (userEmail?: string | null) => {
+    if (userEmail?.trim().toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+      router.push("/admin");
+      return;
+    }
+
+    router.push("/dashboard");
+  };
+
+  const getAuthErrorMessage = (err: FirebaseError) => {
+    switch (err.code) {
+      case "auth/popup-blocked":
+        return "Google popup was blocked by the browser. Retrying with redirect...";
+      case "auth/popup-closed-by-user":
+        return "Google sign-in popup was closed before login completed.";
+      case "auth/unauthorized-domain":
+        return "This domain is not authorized in Firebase Auth. Add your Netlify domain in Firebase Console > Authentication > Settings > Authorized domains.";
+      case "auth/operation-not-allowed":
+        return "Google sign-in is not enabled in Firebase Authentication > Sign-in method.";
+      default:
+        return err?.message || "Google login failed";
+    }
+  };
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        if (user.email?.trim().toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+          router.push("/admin");
+          return;
+        }
+
+        router.push("/dashboard");
+      }
+    });
+
+    getRedirectResult(auth).catch((err: FirebaseError) => {
+      setError(getAuthErrorMessage(err));
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [router]);
 
   const login = async () => {
     setError("");
@@ -40,33 +89,51 @@ export default function Login() {
 
     try {
       await signInWithEmailAndPassword(auth, trimmedEmail, password);
-
-      if (trimmedEmail === ADMIN_EMAIL) {
-        router.push("/admin");  
-      } else {
-        router.push("/dashboard");
-      }
-    } catch (err: any) {
-      setError(err.message || "Login failed");
+      routeUser(trimmedEmail);
+    } catch (err: unknown) {
+      const authError = err as FirebaseError;
+      setError(authError.message || "Login failed");
       setLoading(false);
     }
   };
 
   const googleLogin = async () => {
+    setError("");
     setLoading(true);
+
     try {
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
-      router.push("/dashboard");
-    } catch (err: any) {
-      setError(err.message || "Google login failed");
+      provider.setCustomParameters({
+        prompt: "select_account",
+      });
+
+      if (typeof window !== "undefined" && /Mobi|Android|iPhone|iPad/i.test(window.navigator.userAgent)) {
+        await signInWithRedirect(auth, provider);
+        return;
+      }
+
+      await signInWithPopup(auth, provider, browserPopupRedirectResolver);
+      routeUser(auth.currentUser?.email);
+    } catch (err: unknown) {
+      const authError = err as FirebaseError;
+
+      if (authError.code === "auth/popup-blocked") {
+        const provider = new GoogleAuthProvider();
+        provider.setCustomParameters({
+          prompt: "select_account",
+        });
+        await signInWithRedirect(auth, provider);
+        return;
+      }
+
+      setError(getAuthErrorMessage(authError));
       setLoading(false);
     }
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.card}>
+    <div className="auth-page" style={styles.container}>
+      <div className="auth-card" style={styles.card}>
         <h2 style={styles.title}>Welcome Back 👋</h2>
 
         {error && <div style={styles.error}>{error}</div>}

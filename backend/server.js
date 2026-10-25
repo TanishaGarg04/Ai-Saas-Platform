@@ -54,10 +54,31 @@ app.post("/ai", async (req, res) => {
   try {
     let { prompt, type, userEmail, chatId } = req.body;
 
+    if (typeof prompt !== "string" || !prompt.trim()) {
+      return res.status(400).json({ result: "Please enter a message." });
+    }
+
+    if (!process.env.GROQ_API_KEY) {
+      return res.status(503).json({
+        result: "AI is not configured on the server. Set GROQ_API_KEY and restart the backend.",
+      });
+    }
+
     let finalPrompt = prompt;
 
     if (type === "blog") {
-      finalPrompt = "Write a well formatted blog with headings and paragraphs on: " + prompt;
+      finalPrompt = `Write a complete, useful blog post about the topic below. Follow these instructions:
+- Write in the same language as the topic or request.
+- Start with an engaging, specific title, then a short introduction that explains why the topic matters.
+- Organize the article into 4–6 clearly named sections using Markdown ## headings.
+- Explain ideas clearly with practical examples and actionable advice where relevant.
+- End with a concise conclusion. Do not add an FAQ unless the topic calls for one.
+- Keep the tone natural and informative; avoid filler, repeated points, and clickbait.
+- Do not invent statistics, citations, quotes, or facts. If a detail is uncertain, leave it out.
+- Return only the finished blog post in Markdown.
+
+Topic or requirements:
+${prompt}`;
     }
 
     if (type === "email") {
@@ -95,7 +116,7 @@ app.post("/ai", async (req, res) => {
     const response = await axios.post(
       "https://api.groq.com/openai/v1/chat/completions",
       {
-        model: "llama-3.1-8b-instant",
+        model: process.env.GROQ_MODEL || "openai/gpt-oss-20b",
         messages: [{ role: "user", content: finalPrompt }],
       },
       {
@@ -108,36 +129,44 @@ app.post("/ai", async (req, res) => {
 
     const aiReply = response.data.choices[0].message.content;
 
-    if (chatId) {
-      const chat = await Chat.findById(chatId);
+    // A database outage should not discard an otherwise successful AI answer.
+    try {
+      if (chatId) {
+        const chat = await Chat.findById(chatId);
 
-      if (chat) {
-        chat.messages.push(
-          { role: "user", content: prompt },
-          { role: "assistant", content: aiReply }
-        );
+        if (chat) {
+          chat.messages.push(
+            { role: "user", content: prompt },
+            { role: "assistant", content: aiReply }
+          );
 
-        if (!chat.title || chat.title === "New Chat") {
-          chat.title = prompt.slice(0, 35);
+          if (!chat.title || chat.title === "New Chat") {
+            chat.title = prompt.slice(0, 35);
+          }
+
+          await chat.save();
         }
-
-        await chat.save();
+      } else if (userEmail) {
+        await Chat.create({
+          userEmail,
+          title: prompt.slice(0, 35),
+          messages: [
+            { role: "user", content: prompt },
+            { role: "assistant", content: aiReply },
+          ],
+        });
       }
-    } else if (userEmail) {
-      await Chat.create({
-        userEmail,
-        title: prompt.slice(0, 35),
-        messages: [
-          { role: "user", content: prompt },
-          { role: "assistant", content: aiReply },
-        ],
-      });
+    } catch (saveError) {
+      console.error("CHAT SAVE ERROR:", saveError.message);
     }
 
     res.json({ result: aiReply });
   } catch (error) {
     console.log("ERROR:", error.response?.data || error.message);
-    res.status(500).json({ result: "AI failed" });
+    const providerMessage = error.response?.data?.error?.message;
+    res.status(error.response?.status || 500).json({
+      result: providerMessage || "The AI service could not complete your request. Check the backend logs for details.",
+    });
   }
 });
 
@@ -285,6 +314,8 @@ app.get("/admin/analytics", async (req, res) => {
 });
 
 
-app.listen(5000, () => {
-  console.log("Server running on port 5000");
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });

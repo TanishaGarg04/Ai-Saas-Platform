@@ -42,8 +42,8 @@ export default function Register() {
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.card}>
+    <div className="auth-page" style={styles.container}>
+      <div className="auth-card" style={styles.card}>
         <h2 style={styles.title}>Create Account 🚀</h2>
 
         {error && <div style={styles.error}>{error}</div>}

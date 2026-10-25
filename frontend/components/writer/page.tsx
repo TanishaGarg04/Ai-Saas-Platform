@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
+import { API_URL } from "@/lib/api";
 
 export default function Writer() {
   const router = useRouter();
@@ -22,7 +23,7 @@ export default function Writer() {
     setOutput("");
 
     try {
-      const res = await fetch("http://localhost:5000/ai", {
+      const res = await fetch(`${API_URL}/ai`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -34,9 +35,13 @@ export default function Writer() {
       });
 
       const data = await res.json();
+      if (!res.ok) {
+        setError(data.result || "Could not generate content. Please try again.");
+        return;
+      }
       setOutput(data.result || "No response from server.");
     } catch {
-      setOutput("Error generating content");
+      setError("Could not reach the AI server. Check that the backend is running and try again.");
     } finally {
       setLoading(false);
     }
@@ -49,8 +54,8 @@ export default function Writer() {
   };
 
   return (
-    <div style={styles.page}>
-      <div style={styles.card}>
+    <div className="tool-page" style={styles.page}>
+      <div className="tool-content-card" style={styles.card}>
         <button style={styles.backButton} onClick={() => router.push("/dashboard")}>Back to Dashboard</button>
 
         <div style={styles.header}>

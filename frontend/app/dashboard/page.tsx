@@ -1,5 +1,7 @@
 "use client";
 
+import { API_URL } from "@/lib/api";
+
 import { useEffect, useState } from "react";
 import { auth } from "@/lib/firebase";
 import { onAuthStateChanged, User, signOut } from "firebase/auth";
@@ -22,7 +24,7 @@ export default function Dashboard() {
   useEffect(() => {
     if (!user?.email) return;
 
-    fetch(`http://localhost:5000/stats/${user.email}`)
+    fetch(`${API_URL}/stats/${user.email}`)
       .then((res) => res.json())
       .then((data) => setStats(data))
       .catch(() => {});
@@ -35,8 +37,8 @@ export default function Dashboard() {
   };
 
   return (
-    <div style={styles.page}>
-      <div style={styles.topbar}>
+    <div className="dashboard-page" style={styles.page}>
+      <div className="dashboard-topbar" style={styles.topbar}>
         <div>
           <h1 style={styles.title}>AI SaaS Dashboard</h1>
           <p style={styles.subtitle}>Welcome, {user.email}</p>
@@ -53,7 +55,7 @@ export default function Dashboard() {
         </button>
       </div>
 
-      <div style={styles.statsGrid}>
+      <div className="dashboard-stats-grid" style={styles.statsGrid}>
         <div style={styles.statCard}>
           <p style={styles.statLabel}>Total Chats</p>
           <h2 style={styles.statValue}>{stats?.totalChats ?? 0}</h2>
@@ -76,26 +78,26 @@ export default function Dashboard() {
 
       <h2 style={styles.sectionTitle}>Quick Actions ⚡</h2>
 
-      <div style={styles.toolsGrid}>
-        <div style={styles.toolCard} onClick={() => openTool("/writer")}>
+      <div className="dashboard-tools-grid" style={styles.toolsGrid}>
+        <div className="dashboard-tool-card" style={styles.toolCard} onClick={() => openTool("/writer")}>
           <div style={styles.icon}>✍️</div>
           <h3>Write Blog</h3>
           <p style={styles.toolText}>Create blogs, emails & captions instantly</p>
         </div>
 
-        <div style={styles.toolCard} onClick={() => openTool("/code")}>
+        <div className="dashboard-tool-card" style={styles.toolCard} onClick={() => openTool("/code")}>
           <div style={styles.icon}>💻</div>
           <h3>Review Code</h3>
           <p style={styles.toolText}>Improve and debug your code fast</p>
         </div>
 
-        <div style={styles.toolCard} onClick={() => openTool("/chat")}>
+        <div className="dashboard-tool-card" style={styles.toolCard} onClick={() => openTool("/chat")}>
           <div style={styles.icon}>🤖</div>
           <h3>Ask AI</h3>
           <p style={styles.toolText}>Ask anything and get instant answers</p>
         </div>
 
-        <div style={styles.toolCard} onClick={() => openTool("/dashboard/ats")}>
+        <div className="dashboard-tool-card" style={styles.toolCard} onClick={() => openTool("/dashboard/ats")}>
           <div style={styles.icon}>📄</div>
           <h3>Resume ATS Checker</h3>
           <p style={styles.toolText}>

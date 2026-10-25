@@ -1,5 +1,7 @@
 "use client";
 
+import { API_URL } from "@/lib/api";
+
 import { useEffect, useMemo, useState } from "react";
 import { auth } from "@/lib/firebase";
 import { onAuthStateChanged, User, signOut } from "firebase/auth";
@@ -32,15 +34,15 @@ export default function Admin() {
   }, [user]);
 
   const loadAdminData = async () => {
-  const statsRes = await fetch("http://localhost:5000/admin/stats");
+  const statsRes = await fetch(`${API_URL}/admin/stats`);
   const statsData = await statsRes.json();
   setStats(statsData);
 
-  const chatsRes = await fetch("http://localhost:5000/admin/chats");
+  const chatsRes = await fetch(`${API_URL}/admin/chats`);
   const chatsData = await chatsRes.json();
   setChats(chatsData);
 
-  const analyticsRes = await fetch("http://localhost:5000/admin/analytics");
+  const analyticsRes = await fetch(`${API_URL}/admin/analytics`);
   const analyticsData = await analyticsRes.json();
   setAnalytics(analyticsData);
 };
@@ -48,7 +50,7 @@ export default function Admin() {
   const deleteChat = async (id: string) => {
     if (!confirm("Delete this chat?")) return;
 
-    const res = await fetch(`http://localhost:5000/chat/${id}`, {
+    const res = await fetch(`${API_URL}/chat/${id}`, {
       method: "DELETE",
     });
 
@@ -83,8 +85,8 @@ export default function Admin() {
   }
 
   return (
-    <div style={styles.page}>
-      <aside style={styles.sidebar}>
+    <div className="admin-layout" style={styles.page}>
+      <aside className="admin-sidebar" style={styles.sidebar}>
         <h2 style={styles.logo}>Admin Panel</h2>
         <div style={styles.badge}>ADMIN ONLY</div>
 
@@ -108,8 +110,8 @@ export default function Admin() {
         </button>
       </aside>
 
-      <main style={styles.main}>
-        <div style={styles.topbar}>
+      <main className="admin-main" style={styles.main}>
+        <div className="admin-topbar" style={styles.topbar}>
           <div>
             <h1 style={styles.title}>Admin Dashboard</h1>
             <p style={styles.subtitle}>Manage platform activity and user chats</p>
@@ -123,7 +125,7 @@ export default function Admin() {
           />
         </div>
 
-        <div style={styles.statsGrid}>
+        <div className="admin-stats-grid" style={styles.statsGrid}>
           <div style={styles.statCard}>
             <p style={styles.statLabel}>Total Users</p>
             <h2 style={styles.statValue}>{stats?.totalUsers ?? 0}</h2>
@@ -139,7 +141,7 @@ export default function Admin() {
             <h2 style={styles.statValue}>{stats?.totalMessages ?? 0}</h2>
           </div>
         </div>
-        <section style={styles.analyticsGrid}>
+        <section className="admin-analytics-grid" style={styles.analyticsGrid}>
   <div style={styles.analyticsCard}>
     <h2>Daily Usage</h2>
 
@@ -188,13 +190,13 @@ export default function Admin() {
   </div>
 </section>
 
-        <section style={styles.tableCard}>
+        <section className="admin-chat-table" style={styles.tableCard}>
           <div style={styles.tableHeader}>
             <h2 style={{ margin: 0 }}>Chats Management</h2>
             <span style={styles.countBadge}>{filteredChats.length} chats</span>
           </div>
 
-          <div style={styles.tableHead}>
+          <div className="admin-chat-table-head" style={styles.tableHead}>
             <div>User Email</div>
             <div>Chat Title</div>
             <div>Messages</div>
@@ -203,7 +205,7 @@ export default function Admin() {
           </div>
 
           {filteredChats.map((chat) => (
-            <div key={chat._id} style={styles.tableRow}>
+            <div className="admin-chat-table-row" key={chat._id} style={styles.tableRow}>
               <div style={styles.userEmail}>{chat.userEmail || "Unknown"}</div>
               <div>{chat.title || "New Chat"}</div>
               <div>{chat.messages?.length || 0}</div>
