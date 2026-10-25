@@ -3,5 +3,9 @@
   command = "npm run build"
   publish = ".next"
 
+[build.environment]
+  # NEXT_PUBLIC_API_URL is the public backend origin, inlined into the client bundle by design.
+  SECRETS_SCAN_OMIT_KEYS = "NEXT_PUBLIC_API_URL"
+
 [[plugins]]
   package = "@netlify/plugin-nextjs"
