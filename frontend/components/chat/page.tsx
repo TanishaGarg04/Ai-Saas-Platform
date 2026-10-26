@@ -46,8 +46,15 @@ export default function Chat() {
   }, [messages, loading]);
 
   const loadChats = async (email: string) => {
-    const res = await fetch(`${API_URL}/chat/list/${email}`);
-    const data = await res.json();
+    let data: any[] = [];
+
+    try {
+      const res = await fetch(`${API_URL}/chat/list/${email}`);
+      const json = await res.json();
+      if (Array.isArray(json)) data = json;
+    } catch {
+      // Chat history is optional; sending still works without it.
+    }
 
     setChats(data);
 
@@ -61,15 +68,26 @@ export default function Chat() {
   const createNewChat = async () => {
     if (!user?.email) return;
 
-    const res = await fetch(`${API_URL}/chat/new`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ userEmail: user.email }),
-    });
+    let data: any = null;
 
-    const data = await res.json();
+    try {
+      const res = await fetch(`${API_URL}/chat/new`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userEmail: user.email }),
+      });
+      if (res.ok) data = await res.json();
+    } catch {
+      // Fall through and let the first message create the chat instead.
+    }
+
+    if (!data?._id) {
+      setCurrentChat(null);
+      setMessages([]);
+      return;
+    }
 
     setChats((prev) => [data, ...prev]);
     setCurrentChat(data);
@@ -85,7 +103,7 @@ export default function Chat() {
   };
 
   const sendMessage = async () => {
-    if (!input.trim() || loading || !currentChat) return;
+    if (!input.trim() || loading) return;
 
     const text = input;
     const newMessages = [...messages, { role: "user", content: text }];
@@ -104,7 +122,7 @@ export default function Chat() {
           prompt: text,
           type: "chat",
           userEmail: user?.email,
-          chatId: currentChat._id,
+          chatId: currentChat?._id,
         }),
       });
 
