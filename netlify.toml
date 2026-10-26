@@ -1,0 +1,15 @@
+# Lives at the repo root so Netlify finds it; the app itself is built from frontend/.
+[build]
+  base = "frontend"
+  # Install the frontend and the Express backend (bundled into the API function).
+  command = "npm install && npm install --prefix ../backend && npm run build"
+  publish = ".next"
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+  # pdf-parse-new loads pdf.js from files at runtime, so ship it unbundled.
+  external_node_modules = ["pdf-parse-new"]
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
